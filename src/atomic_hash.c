@@ -61,7 +61,7 @@
 #define unhold_bucket(hv, v) while ((hv).y && !cas (&(hv).x, 0, (v).x))
 #define hold_bucket_otherwise_return_0(hv, v) do { unsigned long __l = MAXSPIN; \
           while (!cas(&(hv).x, (v).x, 0)) { /* when CAS fails */ \
-            if ((hv).x != (v).x) return 0; /* already released or reused */\
+            if (((hv).x != (v).x) && (--__l == 0)) return 0; /* already released or reused */\
             while ((hv).x == 0) { /* wait for unhold */ \
               if ((hv).y == 0) return 0; /* no unhold but released */ \
               if (--__l == 0) { add1 (h->stats.escapes); return 0; } /* give up */ \
